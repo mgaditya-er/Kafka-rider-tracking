@@ -4,21 +4,34 @@ async function init() {
   const admin = kafka.admin();
   console.log("Admin connecting...");
 
-  await admin.connect(); // Add await to ensure proper connection
-  console.log("Admin connection Success");
+  try {
+    await admin.connect();
+    console.log("Admin connection Success");
 
-  console.log("Creating topics...");
-  await admin.createTopics({
-    topics: [
-      {
-        topic: "rider-updates",
-        numPartitions: 2,
-      },
-    ],
-  });
-  console.log("Topic created successfully");
+    console.log("Creating topics...");
+    const result = await admin.createTopics({
+      topics: [
+        {
+          topic: "rider-statuss",
+          numPartitions: 2, // Simplify configuration
+        },
+      ],
+    });
 
-  await admin.disconnect(); // Disconnect the admin client to avoid hanging
+    if (result) {
+      console.log("Topic created successfully");
+    } else {
+      console.error("Topic creation failed or topic already exists");
+    }
+
+    const topics = await admin.listTopics();
+    console.log("Available topics:", topics);
+  } catch (error) {
+    console.error("Error creating topic:", error);
+  } finally {
+    await admin.disconnect();
+    console.log("Admin disconnected");
+  }
 }
 
 init();

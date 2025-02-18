@@ -7,22 +7,37 @@ const rl = readline.createInterface({
     output:process.stdout
 })
 
-async function init(){
-    const producer =kafka.producer();
-    console.log('connecting producer');
+rl.setPrompt('> ')
+rl.prompt();
+async function init() {
+    const producer = kafka.producer();
+  
+    console.log("Connecting Producer");
     await producer.connect();
-    console.log('producer connect successfully');
-    
-    await producer.send({
-        topic : 'rider-updates',
-        messages : [
-            {
-                partition : 0,
-                key :'location-update',value : JSON.stringify({name : 'Tony stark',loc: 'South'}),
-            }
-        ]
-    });
-    await producer.disconnect();
-}
+    console.log("Producer Connected Successfully");
+  
+    rl.setPrompt("> ");
+    rl.prompt();
+  
+    rl.on("line", async function (line) {
+      const [riderName, location] = line.split(" ");
+      await producer.send({
+        topic: "rider-statuss",
+        messages: [
+          {
+            partition: location.toLowerCase() === "north" ? 0 : 1,
+            key: "location-update",
+            value: JSON.stringify({ name: riderName, location }),
+          },
+        ],
 
-init();
+
+
+        
+      });
+    }).on("close", async () => {
+      await producer.disconnect();
+    });
+  }
+  
+  init();

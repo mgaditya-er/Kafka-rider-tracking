@@ -1,14 +1,15 @@
 import kafka from './client.js'
-
+const group = process.argv[2];
 async function init() {
-    const consumer  =  kafka.consumer({groupId: "user-1"});
+    const consumer  =  kafka.consumer({groupId: group});
     await consumer.connect();
     console.log('Consumer connected successfully');
-    await consumer.subscribe({ topics: ['rider-updates'] ,fromBeginning: true});
+    await consumer.subscribe({ topics: ['rider-statuss'] ,fromBeginning: true});
 
     await consumer.run({
         eachMessage: async ({ topic, partition, message, heartbeat, pause }) =>{
-            console.log(`Topic : [${topic}] ,
+            console.log(`group : ${group},
+                        Topic : [${topic}] ,
                         Partition : ${partition},
                         Message : 
                         `,message.value.toString());
